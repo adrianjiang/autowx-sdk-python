@@ -1,6 +1,6 @@
 from urllib.parse import urlparse, parse_qs
-from typing import List, Dict, Any
 from .crypto import hmac_sha1
+from .crypto import get_machine_code
 
 
 def create_sign_request_string(appid: str, secret: str, method: str, url: str, timestamp: int) -> str:
@@ -8,6 +8,7 @@ def create_sign_request_string(appid: str, secret: str, method: str, url: str, t
     sign_string = f"""
 {appid}
 {secret}
+{get_machine_code()}
 {timestamp}
 {method}:{pathname}
 """
@@ -30,4 +31,16 @@ def get_url_pathname(url: str) -> str:
 
 def sign_request(appid: str, secret: str, method: str, url: str, timestamp: int) -> str:
     sign_string = create_sign_request_string(appid, secret, method, url, timestamp)
+    sign = hmac_sha1(secret, sign_string)
+    return sign
+
+def sign_im(client_type: str, secret: str, user_id: str, session_id: str, machine_code: str, timestamp: int) -> str:
+    sign_string = f"""
+{client_type}
+{secret}
+{user_id}
+{session_id}
+{machine_code}
+{timestamp}
+"""
     return hmac_sha1(sign_string, secret)
