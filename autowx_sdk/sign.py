@@ -1,6 +1,7 @@
 from urllib.parse import urlparse, parse_qs
 from .crypto import hmac_sha1
 from .crypto import get_machine_code
+import uuid
 
 
 def create_sign_request_string(appid: str, secret: str, method: str, url: str, timestamp: int) -> str:
@@ -34,13 +35,23 @@ def sign_request(appid: str, secret: str, method: str, url: str, timestamp: int)
     sign = hmac_sha1(secret, sign_string)
     return sign
 
-def sign_im(client_type: str, secret: str, user_id: str, session_id: str, machine_code: str, timestamp: int) -> str:
+
+def sign_im(client_type: str, secret: str, appid: str, session_id: str, timestamp: int) -> str:
+    machine_code = get_machine_code()
     sign_string = f"""
 {client_type}
 {secret}
-{user_id}
+{appid}
 {session_id}
 {machine_code}
 {timestamp}
 """
-    return hmac_sha1(sign_string, secret)
+    return hmac_sha1(secret, sign_string)
+
+
+def create_session_id() -> str:
+    return str(uuid.uuid4())
+
+
+def create_task_key() -> str:
+    return str(uuid.uuid4())
